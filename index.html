@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>💝 A Game From Yaren</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;900&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#ff6eb4;--pink2:#ff4d8d;--purple:#c084fc;
+  --gold:#ffd966;--mint:#6ee7c0;--soft:#fff0f9;
+  --dark:#0e0018;--card:rgba(255,255,255,.07);
+  --border:rgba(255,110,180,.2);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--dark);color:#fff5f9;
+  touch-action:manipulation;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── BG ── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.star{position:absolute;border-radius:50%;background:#fff;
+  animation:tw var(--t,3s) ease-in-out infinite alternate;}
+@keyframes tw{from{opacity:.05;transform:scale(.4)}to{opacity:.8;transform:scale(1.3)}}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.1;
+  animation:bm var(--bm,14s) ease-in-out infinite alternate;}
+@keyframes bm{from{transform:translate(0,0)}to{transform:translate(var(--bx,30px),var(--by,20px))}}
+
+/* ── PAGE SYSTEM ── */
+.page{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;align-items:center;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  z-index:10;padding-bottom:40px;
+  transition:opacity .4s ease,transform .4s cubic-bezier(.22,1,.36,1);
+  will-change:opacity,transform;
+  background:transparent;
+}
+.page.hidden{opacity:0;transform:translateX(52px);pointer-events:none;}
+.page.gone{display:none;}
+
+/* ══════════════════════════
+   HOME / MENU
+══════════════════════════ */
+.home-hero{
+  width:100%;padding:54px 22px 38px;text-align:center;
+  flex-shrink:0;position:relative;overflow:hidden;
+  background:linear-gradient(170deg,rgba(50,0,80,.95),rgba(15,0,30,.98));
+  border-bottom:1px solid var(--border);
+}
+.home-hero::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% -10%,rgba(255,80,160,.15),transparent 65%);
+  pointer-events:none;
+}
+.hero-char{font-size:4.5rem;display:block;
+  animation:charBob 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 20px rgba(255,110,180,.4));
+  position:relative;z-index:1;margin-bottom:8px;}
+@keyframes charBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-12px) rotate(5deg)}}
+.hero-title{
+  font-family:'Pacifico',cursive;
+  font-size:clamp(1.7rem,8vw,2.5rem);
+  color:#fff5f9;
+  text-shadow:0 0 40px rgba(255,110,180,.5);
+  position:relative;z-index:1;margin-bottom:6px;
+}
+.hero-sub{font-size:.8rem;color:rgba(255,200,230,.45);
+  letter-spacing:2px;text-transform:uppercase;position:relative;z-index:1;}
+.hero-from{
+  display:inline-block;margin-top:14px;
+  background:rgba(255,110,180,.1);border:1px solid rgba(255,110,180,.2);
+  border-radius:50px;padding:6px 18px;
+  font-size:.75rem;color:rgba(255,200,230,.6);
+  letter-spacing:1px;position:relative;z-index:1;
+}
+
+.menu-grid{
+  width:100%;max-width:400px;
+  padding:20px 16px 0;
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  z-index:1;
+}
+.menu-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:20px 14px;text-align:center;
+  cursor:pointer;
+  transition:transform .15s,background .2s;
+  animation:pop .5s cubic-bezier(.22,1,.36,1) both;
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.menu-card:nth-child(1){animation-delay:.05s;border-color:rgba(255,110,180,.25);}
+.menu-card:nth-child(2){animation-delay:.1s;border-color:rgba(255,210,80,.2);}
+.menu-card:nth-child(3){animation-delay:.15s;border-color:rgba(140,100,255,.2);}
+.menu-card:nth-child(4){animation-delay:.2s;border-color:rgba(80,210,180,.2);}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:none}}
+.menu-card:active{transform:scale(.96);}
+.mc-emoji{font-size:2.6rem;display:block;margin-bottom:8px;animation:charBob 2.5s ease-in-out infinite;animation-delay:var(--cd,0s);}
+.mc-title{font-family:'Dancing Script',cursive;font-size:1.1rem;font-weight:700;margin-bottom:4px;}
+.mc-desc{font-size:.7rem;color:rgba(255,200,230,.4);line-height:1.4;}
+.mc1 .mc-title{color:var(--pink);}
+.mc2 .mc-title{color:var(--gold);}
+.mc3 .mc-title{color:var(--purple);}
+.mc4 .mc-title{color:var(--mint);}
+
+/* ══ SHARED ══ */
+.ph{width:100%;max-width:420px;display:flex;align-items:center;gap:12px;padding:20px 16px 0;flex-shrink:0;}
+.back{
+  width:40px;height:40px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;color:var(--pink);font-weight:700;
+  transition:transform .15s;flex-shrink:0;
+}
+.back:active{transform:scale(.9);}
+.ptitle{font-family:'Dancing Script',cursive;font-size:1.4rem;color:var(--pink);font-weight:700;}
+.pb{width:100%;max-width:420px;padding:16px 16px 0;display:flex;flex-direction:column;gap:12px;}
+
+/* ══════════════════════════
+   GAME 1 — HEART CATCHER
+══════════════════════════ */
+#game1{background:linear-gradient(170deg,#0e0018,#120020);}
+.g1-stats{
+  width:100%;max-width:420px;
+  display:flex;justify-content:space-between;
+  padding:12px 16px 0;flex-shrink:0;
+}
+.stat-pill{
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:50px;padding:6px 16px;
+  font-size:.78rem;font-weight:700;color:rgba(255,200,230,.6);
+}
+.stat-pill span{color:var(--pink);font-family:'Pacifico',cursive;font-size:.95rem;}
+
+#arenaWrap{
+  flex:1;width:100%;max-width:420px;
+  position:relative;overflow:hidden;
+  margin-top:10px;min-height:0;
+}
+#arena{
+  position:absolute;inset:0;
+  border:1px solid rgba(255,110,180,.08);
+  border-radius:20px;
+  background:radial-gradient(ellipse at 50% 30%,rgba(255,80,160,.06),transparent 70%);
+  overflow:hidden;
+}
+.falling{
+  position:absolute;font-size:2rem;cursor:pointer;
+  animation:fall var(--spd,3.5s) linear forwards;
+  user-select:none;-webkit-user-select:none;
+  transition:transform .1s;
+}
+.falling:active{transform:scale(1.4);}
+@keyframes fall{from{transform:translateY(-60px)}to{transform:translateY(110vh)}}
+.combo-bar-wrap{
+  width:calc(100% - 32px);max-width:388px;
+  height:6px;background:rgba(255,255,255,.06);
+  border-radius:50px;overflow:hidden;margin:8px 16px 0;flex-shrink:0;
+}
+.combo-bar{height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--purple));
+  border-radius:50px;transition:width .3s;}
+.g1-msg{
+  text-align:center;padding:8px 16px 0;
+  font-family:'Dancing Script',cursive;font-size:1.15rem;
+  color:rgba(255,150,200,.5);min-height:32px;flex-shrink:0;
+}
+.g1-start{
+  margin:12px 16px 0;
+  background:linear-gradient(135deg,var(--pink),var(--pink2));
+  border:none;border-radius:50px;padding:15px;width:calc(100% - 32px);
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:.95rem;
+  color:white;cursor:pointer;letter-spacing:1px;
+  box-shadow:0 6px 20px rgba(255,77,141,.3);
+  transition:transform .15s;flex-shrink:0;
+}
+.g1-start:active{transform:scale(.97);}
+
+/* ══════════════════════════
+   GAME 2 — QUIZ
+══════════════════════════ */
+#game2{background:linear-gradient(170deg,#0e0015,#100018);}
+.qz-progress{
+  width:calc(100% - 32px);max-width:388px;
+  height:5px;background:rgba(255,255,255,.06);
+  border-radius:50px;overflow:hidden;margin:14px 16px 0;flex-shrink:0;
+}
+.qz-prog-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--pink));
+  border-radius:50px;transition:width .4s;}
+.qz-card{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,210,80,.15);
+  border-radius:22px;padding:24px 20px;text-align:center;
+  animation:pop .4s cubic-bezier(.22,1,.36,1);
+}
+.qz-num{font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,210,80,.35);margin-bottom:10px;}
+.qz-q{font-family:'Dancing Script',cursive;font-size:1.5rem;color:var(--gold);line-height:1.4;margin-bottom:20px;}
+.qz-opts{display:flex;flex-direction:column;gap:10px;}
+.qz-opt{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,210,80,.15);
+  border-radius:14px;padding:14px 16px;cursor:pointer;
+  font-size:.9rem;color:rgba(255,230,180,.7);text-align:left;
+  transition:background .2s,border-color .2s,transform .15s;
+}
+.qz-opt:active{transform:scale(.98);}
+.qz-opt.correct{background:rgba(80,210,130,.1);border-color:rgba(80,210,130,.4);color:#6ee7a0;}
+.qz-opt.wrong{background:rgba(255,80,80,.08);border-color:rgba(255,80,80,.3);color:rgba(255,150,150,.6);}
+.qz-opt.disabled{pointer-events:none;}
+.qz-feedback{
+  background:rgba(255,210,80,.06);border:1px solid rgba(255,210,80,.15);
+  border-radius:16px;padding:16px;text-align:center;
+  font-family:'Dancing Script',cursive;font-size:1.2rem;color:var(--gold);
+  line-height:1.5;animation:pop .3s cubic-bezier(.22,1,.36,1);
+}
+.qz-next{
+  background:linear-gradient(135deg,var(--gold),#ffaa00);
+  border:none;border-radius:50px;padding:14px;
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:.9rem;
+  color:#3d1a00;cursor:pointer;letter-spacing:1px;
+  transition:transform .15s;
+}
+.qz-next:active{transform:scale(.97);}
+.qz-score{
+  background:rgba(255,210,80,.06);border:1px solid rgba(255,210,80,.2);
+  border-radius:22px;padding:28px 20px;text-align:center;
+  animation:pop .4s cubic-bezier(.22,1,.36,1);
+}
+.qz-score-emoji{font-size:4rem;display:block;margin-bottom:12px;animation:charBob 1.5s ease-in-out infinite;}
+.qz-score-title{font-family:'Pacifico',cursive;font-size:1.6rem;color:var(--gold);margin-bottom:8px;}
+.qz-score-sub{font-size:.88rem;color:rgba(255,230,180,.5);line-height:1.6;margin-bottom:16px;}
+.qz-retry{
+  background:transparent;border:1px solid rgba(255,210,80,.25);
+  border-radius:50px;padding:10px 24px;
+  font-family:'Nunito',sans-serif;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,210,80,.5);cursor:pointer;
+}
+
+/* ══════════════════════════
+   GAME 3 — SCRATCH CARDS
+══════════════════════════ */
+#game3{background:linear-gradient(170deg,#0a0018,#0e001a);}
+.scratch-intro{
+  background:rgba(140,100,255,.06);border:1px solid rgba(140,100,255,.18);
+  border-radius:20px;padding:20px 18px;text-align:center;
+}
+.si-emoji{font-size:3rem;display:block;animation:charBob 2s ease-in-out infinite;margin-bottom:10px;}
+.si-title{font-family:'Dancing Script',cursive;font-size:1.4rem;color:var(--purple);margin-bottom:5px;}
+.si-sub{font-size:.78rem;color:rgba(200,170,255,.4);line-height:1.6;}
+.scratch-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.sc-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(140,100,255,.18);
+  border-radius:18px;overflow:hidden;cursor:pointer;
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  position:relative;
+  animation:pop .5s cubic-bezier(.22,1,.36,1) both;
+}
+.sc-card:nth-child(1){animation-delay:.04s}
+.sc-card:nth-child(2){animation-delay:.08s}
+.sc-card:nth-child(3){animation-delay:.12s}
+.sc-card:nth-child(4){animation-delay:.16s}
+.sc-card:nth-child(5){animation-delay:.20s}
+.sc-card:nth-child(6){animation-delay:.24s}
+.sc-cover{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(140,100,255,.35),rgba(100,60,200,.35));
+  border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:6px;
+  transition:opacity .4s,transform .4s;
+}
+.sc-cover.revealed{opacity:0;transform:scale(1.15);pointer-events:none;}
+.sc-cover-icon{font-size:2rem;}
+.sc-cover-text{font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:rgba(220,190,255,.5);font-weight:700;}
+.sc-inner{
+  padding:12px;text-align:center;z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+}
+.sc-inner-emoji{font-size:2rem;animation:charBob 2s ease-in-out infinite;}
+.sc-inner-text{font-size:.72rem;color:rgba(220,190,255,.7);line-height:1.4;font-style:italic;}
+
+/* ══════════════════════════
+   GAME 4 — STORY / CHOICES
+══════════════════════════ */
+#game4{background:linear-gradient(170deg,#0a0018,#120010);}
+.story-scene{
+  background:rgba(255,255,255,.04);border:1px solid rgba(80,210,180,.15);
+  border-radius:22px;padding:22px 18px;
+  animation:pop .4s cubic-bezier(.22,1,.36,1);
+}
+.ss-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.ss-char{
+  width:52px;height:52px;border-radius:50%;
+  background:rgba(255,110,180,.1);border:2px solid rgba(255,110,180,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;flex-shrink:0;
+}
+.ss-name{font-family:'Dancing Script',cursive;font-size:1rem;color:var(--pink);font-weight:700;}
+.ss-role{font-size:.65rem;color:rgba(255,200,230,.35);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.ss-text{
+  font-size:.9rem;color:rgba(255,210,235,.65);
+  line-height:1.85;margin-bottom:20px;
+  font-style:italic;
+}
+.ss-choices{display:flex;flex-direction:column;gap:9px;}
+.ss-choice{
+  background:rgba(80,210,180,.05);border:1px solid rgba(80,210,180,.15);
+  border-radius:14px;padding:13px 15px;cursor:pointer;
+  font-size:.86rem;color:rgba(180,240,220,.6);
+  transition:background .2s,border-color .2s,transform .15s;
+  line-height:1.5;
+}
+.ss-choice:active{transform:scale(.98);}
+.ss-choice.chosen{background:rgba(80,210,180,.12);border-color:rgba(80,210,180,.35);color:#6ee7c0;}
+.ss-result{
+  background:rgba(255,110,180,.06);border:1px solid rgba(255,110,180,.2);
+  border-radius:16px;padding:18px;text-align:center;
+  animation:pop .35s cubic-bezier(.22,1,.36,1);
+}
+.sr-emoji{font-size:2.5rem;display:block;margin-bottom:10px;animation:charBob 1.5s ease-in-out infinite;}
+.sr-title{font-family:'Dancing Script',cursive;font-size:1.3rem;color:var(--pink);margin-bottom:6px;}
+.sr-text{font-size:.83rem;color:rgba(255,200,230,.5);line-height:1.6;}
+.ss-next{
+  background:linear-gradient(135deg,var(--mint),#20c997);
+  border:none;border-radius:50px;padding:13px;
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;
+  color:#00251a;cursor:pointer;letter-spacing:1px;
+  transition:transform .15s;
+}
+.ss-next:active{transform:scale(.97);}
+.story-end{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,110,180,.2);
+  border-radius:22px;padding:28px 20px;text-align:center;
+  animation:pop .4s cubic-bezier(.22,1,.36,1);
+}
+.se-emoji{font-size:4rem;display:block;margin-bottom:14px;animation:charBob 1.5s ease-in-out infinite;}
+.se-title{font-family:'Pacifico',cursive;font-size:1.5rem;color:var(--pink);margin-bottom:10px;}
+.se-text{font-size:.87rem;color:rgba(255,200,230,.5);line-height:1.7;margin-bottom:18px;}
+.se-replay{background:transparent;border:1px solid rgba(255,110,180,.25);border-radius:50px;
+  padding:10px 24px;font-family:'Nunito',sans-serif;font-size:.78rem;letter-spacing:2px;
+  text-transform:uppercase;color:rgba(255,180,210,.45);cursor:pointer;}
+
+/* ── toast ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--pink2),var(--purple));color:#fff;
+  font-family:'Dancing Script',cursive;font-size:1.1rem;
+  padding:10px 24px;border-radius:50px;
+  box-shadow:0 8px 28px rgba(255,77,141,.35);
+  z-index:500;white-space:nowrap;pointer-events:none;
+  animation:tIn .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes tIn{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+/* fly */
+.fly{position:fixed;pointer-events:none;z-index:999;font-size:1.3rem;animation:flyUp 1.4s ease-out forwards;}
+@keyframes flyUp{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--tx,0),-140px) rotate(var(--tr,20deg));}}
+/* ripple */
+.rip{position:fixed;border-radius:50%;background:radial-gradient(circle,rgba(255,110,180,.22),transparent 70%);pointer-events:none;z-index:9999;animation:rOut .6s ease-out forwards;width:40px;height:40px;}
+@keyframes rOut{to{transform:translate(-50%,-50%) scale(8);opacity:0;}}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+
+<!-- ════ HOME ════ -->
+<div class="page" id="home">
+  <div class="home-hero">
+    <span class="hero-char">🐰</span>
+    <h1 class="hero-title">A Game From Yaren</h1>
+    <p class="hero-sub">made with love · just for Katarina</p>
+    <div class="hero-from">💌 Kayseri → wherever you are</div>
+  </div>
+
+  <div class="menu-grid">
+    <div class="menu-card mc1" onclick="goTo('game1')">
+      <span class="mc-emoji" style="--cd:0s">💖</span>
+      <div class="mc-title">Heart Catcher</div>
+      <div class="mc-desc">Catch the love Yaren sends you!</div>
+    </div>
+    <div class="menu-card mc2" onclick="goTo('game2')">
+      <span class="mc-emoji" style="--cd:.3s">⭐</span>
+      <div class="mc-title">Know Yaren?</div>
+      <div class="mc-desc">A quiz about the girl who loves you</div>
+    </div>
+    <div class="menu-card mc3" onclick="goTo('game3')">
+      <span class="mc-emoji" style="--cd:.6s">🎁</span>
+      <div class="mc-title">Surprise Cards</div>
+      <div class="mc-desc">Tap to reveal hidden love notes</div>
+    </div>
+    <div class="menu-card mc4" onclick="goTo('game4')">
+      <span class="mc-emoji" style="--cd:.9s">🌙</span>
+      <div class="mc-title">Our Story</div>
+      <div class="mc-desc">A little adventure — you choose!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GAME 1 — HEART CATCHER ════ -->
+<div class="page hidden gone" id="game1">
+  <div class="ph">
+    <button class="back" onclick="goHome()">←</button>
+    <span class="ptitle">💖 Heart Catcher</span>
+  </div>
+
+  <div class="g1-stats">
+    <div class="stat-pill">Score <span id="g1score">0</span></div>
+    <div class="stat-pill">Time <span id="g1time">30</span>s</div>
+    <div class="stat-pill">Combo <span id="g1combo">x1</span></div>
+  </div>
+
+  <div class="combo-bar-wrap"><div class="combo-bar" id="comboBar"></div></div>
+
+  <div id="arenaWrap"><div id="arena"></div></div>
+
+  <div class="g1-msg" id="g1msg">Tap START and catch everything Yaren throws at you! 💕</div>
+  <button class="g1-start" id="g1startBtn" onclick="startGame1()">✨ Start Catching! ✨</button>
+</div>
+
+<!-- ════ GAME 2 — QUIZ ════ -->
+<div class="page hidden gone" id="game2">
+  <div class="ph">
+    <button class="back" onclick="goHome()">←</button>
+    <span class="ptitle">⭐ Know Yaren?</span>
+  </div>
+  <div class="pb">
+    <div class="qz-progress"><div class="qz-prog-bar" id="qzBar" style="width:0%"></div></div>
+    <div id="qzContent"></div>
+  </div>
+</div>
+
+<!-- ════ GAME 3 — SCRATCH CARDS ════ -->
+<div class="page hidden gone" id="game3">
+  <div class="ph">
+    <button class="back" onclick="goHome()">←</button>
+    <span class="ptitle">🎁 Surprise Cards</span>
+  </div>
+  <div class="pb">
+    <div class="scratch-intro">
+      <span class="si-emoji">🎁</span>
+      <div class="si-title">12 surprises from Yaren</div>
+      <div class="si-sub">Each card hides something she wants you to know 💕</div>
+    </div>
+    <div class="scratch-grid" id="scratchGrid"></div>
+  </div>
+</div>
+
+<!-- ════ GAME 4 — STORY ════ -->
+<div class="page hidden gone" id="game4">
+  <div class="ph">
+    <button class="back" onclick="goHome()">←</button>
+    <span class="ptitle">🌙 Our Story</span>
+  </div>
+  <div class="pb" id="storyBody"></div>
+</div>
+
+<script>
+/* ── BG ── */
+const bg=document.getElementById('bg');
+for(let i=0;i<100;i++){
+  const s=document.createElement('div');s.className='star';
+  const z=Math.random()*1.6+.3;
+  s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--t:${(Math.random()*4+1).toFixed(1)}s;animation-delay:${Math.random()*6}s`;
+  bg.appendChild(s);
+}
+[['#ff4d8d',-60,100,80,-80],['#c084fc',60,-40,100,60],['#6060ff',-30,80,80,-40]].forEach(([c,bx,by,w,h])=>{
+  const b=document.createElement('div');b.className='blob';
+  b.style.cssText=`width:${w+180}px;height:${h+180}px;background:${c};left:${20+Math.random()*60}%;top:${10+Math.random()*70}%;--bm:${10+Math.random()*8}s;--bx:${bx}px;--by:${by}px;`;
+  bg.appendChild(b);
+});
+
+/* ── NAV ── */
+let cur='home';
+function goTo(id){
+  const f=document.getElementById(cur),t=document.getElementById(id);
+  f.classList.add('hidden');
+  setTimeout(()=>f.classList.add('gone'),430);
+  t.classList.remove('gone');t.classList.add('hidden');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{t.classList.remove('hidden');t.scrollTop=0;}));
+  cur=id;
+  if(id==='game2')initQuiz();
+  if(id==='game4')initStory();
+}
+function goHome(){
+  if(g1Timer)clearInterval(g1Timer);
+  goTo('home');
+}
+
+/* ══════════════════════════
+   GAME 1 — HEART CATCHER
+══════════════════════════ */
+const goodItems=['💖','🌸','💕','✨','🌹','💌','🌙','⭐','🦋','🍓','🌺','💝'];
+const badItems= ['💔','⚡','🌧️','😤'];
+const g1msgs=[
+  "Yaren is sending so much love! 💕",
+  "You're amazing at this! 🌸",
+  "Catch it all — it's all for you! ✨",
+  "Yaren is cheering for you! 🐰",
+  "Every heart is a thought of you! 💖",
+  "She loves you THIS much! 🌹",
+];
+let g1score=0,g1combo=1,g1comboCount=0,g1Timer=null,g1timeLeft=30,g1running=false;
+
+function startGame1(){
+  document.getElementById('g1startBtn').style.display='none';
+  document.getElementById('arena').innerHTML='';
+  g1score=0;g1combo=1;g1comboCount=0;g1timeLeft=30;g1running=true;
+  updateG1UI();
+  g1Timer=setInterval(tickG1,1000);
+  spawnLoop();
+}
+
+function tickG1(){
+  g1timeLeft--;
+  document.getElementById('g1time').textContent=g1timeLeft;
+  if(g1timeLeft<=0){
+    clearInterval(g1Timer);g1running=false;
+    endGame1();
+  }
+}
+
+function spawnLoop(){
+  if(!g1running)return;
+  spawnItem();
+  setTimeout(spawnLoop,Math.max(400,900-g1score*5));
+}
+
+function spawnItem(){
+  const arena=document.getElementById('arena');
+  const isGood=Math.random()>.22;
+  const emoji=isGood?goodItems[Math.floor(Math.random()*goodItems.length)]:badItems[Math.floor(Math.random()*badItems.length)];
+  const el=document.createElement('div');
+  el.className='falling';
+  el.textContent=emoji;
+  el.style.cssText=`left:${5+Math.random()*85}%;top:-40px;--spd:${2.2+Math.random()*2.5}s;font-size:${1.8+Math.random()*.8}rem;`;
+  el.style.position='absolute';
+  el.style.animation=`fall ${2.2+Math.random()*2.5}s linear forwards`;
+  el.addEventListener('touchstart',e=>{e.preventDefault();tapItem(el,isGood,e);},{passive:false});
+  el.addEventListener('click',e=>{tapItem(el,isGood,e);});
+  arena.appendChild(el);
+  setTimeout(()=>{if(el.parentNode)el.remove();},5000);
+}
+
+function tapItem(el,isGood,e){
+  if(!g1running)return;
+  const rect=el.getBoundingClientRect();
+  el.remove();
+  if(isGood){
+    g1comboCount++;
+    if(g1comboCount>=3){g1combo=Math.min(5,g1combo+1);g1comboCount=0;}
+    g1score+=10*g1combo;
+    spawnHearts(rect.left+rect.width/2,rect.top+rect.height/2,3);
+    const msgs=g1msgs;
+    if(Math.random()>.6)document.getElementById('g1msg').textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  } else {
+    g1score=Math.max(0,g1score-15);
+    g1combo=1;g1comboCount=0;
+    showToast('Oops! That was a bad one! 😬');
+  }
+  updateG1UI();
+}
+
+function updateG1UI(){
+  document.getElementById('g1score').textContent=g1score;
+  document.getElementById('g1combo').textContent='x'+g1combo;
+  document.getElementById('comboBar').style.width=Math.min(100,(g1comboCount/3)*100)+'%';
+}
+
+function endGame1(){
+  document.getElementById('arena').innerHTML='';
+  const s=g1score;
+  let emoji,msg,sub;
+  if(s>=300){emoji='🏆';msg='INCREDIBLE, Katarina!';sub='Yaren is SO proud of you right now. You caught basically everything she sent! 💕';}
+  else if(s>=150){emoji='🌸';msg='Amazing job!';sub='You caught so much love today. Yaren sent every single one of those hearts thinking of you. 💖';}
+  else{emoji='💌';msg='Sweet effort!';sub="The hearts you missed? They're still yours. Yaren's love doesn't disappear. It just waits. 🌙";}
+  document.getElementById('g1msg').innerHTML=`<div style="text-align:center;padding:10px 0"><div style="font-size:3rem">${emoji}</div><div style="font-family:'Dancing Script',cursive;font-size:1.5rem;color:var(--pink);margin:8px 0">${msg}</div><div style="font-size:.82rem;color:rgba(255,200,230,.5);line-height:1.6;margin-bottom:10px">${sub}</div><div style="font-family:'Pacifico',cursive;font-size:1.1rem;color:var(--gold)">Score: ${s}</div></div>`;
+  const btn=document.getElementById('g1startBtn');
+  btn.textContent='Play Again 💕';btn.style.display='block';
+  for(let i=0;i<12;i++)setTimeout(()=>spawnHearts(Math.random()*window.innerWidth,Math.random()*window.innerHeight*.7,3),i*120);
+}
+
+/* ══════════════════════════
+   GAME 2 — QUIZ
+══════════════════════════ */
+const questions=[
+  {
+    q:"Where is Yaren right now?",
+    opts:["Istanbul","Ankara","Kayseri","Izmir"],
+    a:2,
+    feedback:{
+      correct:"That's right! She's in Kayseri, thinking about you 💕",
+      wrong:"She's in Kayseri! She wanted you to know exactly where she is 🌸"
+    }
+  },
+  {
+    q:"What does Yaren wait for every single night?",
+    opts:["A good morning message","A goodnight message from Katarina","A voice call","A photo"],
+    a:1,
+    feedback:{
+      correct:"Yes! Every night Yaren waits for your goodnight — it means everything to her 🌙",
+      wrong:"Yaren waits for your goodnight message every night without exception 🌙"
+    }
+  },
+  {
+    q:"When did Yaren and Katarina officially become a couple?",
+    opts:["July 2025","August 2025","September 6, 2025","October 2025"],
+    a:2,
+    feedback:{
+      correct:"September 6th! A day Yaren will never forget 💕",
+      wrong:"September 6, 2025 — the day that made everything real 💕"
+    }
+  },
+  {
+    q:"How does Yaren feel about Katarina being honest with her?",
+    opts:["She prefers small lies sometimes","Honesty isn't that important","She wants 100% truth always","Only about big things"],
+    a:2,
+    feedback:{
+      correct:"Always the truth — that's what makes them stronger 💛",
+      wrong:"Yaren wants full honesty always. It's one of their most important rules 💛"
+    }
+  },
+  {
+    q:"What does Yaren say when school or exams come first?",
+    opts:["She gets upset","She waits patiently and is proud","She stops talking","She asks for more time"],
+    a:1,
+    feedback:{
+      correct:"She waits, she's proud, and she promises to make up for the time later 📚💕",
+      wrong:"School comes first — always. And Yaren is proud of Katarina for that 📚"
+    }
+  },
+  {
+    q:"What should Katarina do before going offline for a while?",
+    opts:["Nothing, it's fine","Send a long explanation","Just write a time like 'back in an hour'","Wait until Yaren asks"],
+    a:2,
+    feedback:{
+      correct:"Exactly! Just a small note — 'back in an hour' — so Yaren can relax 💕",
+      wrong:"Just a small time note is enough — it helps Yaren feel calm and not stuck waiting ⏰"
+    }
+  },
+  {
+    q:"What is Yaren's one wish for Katarina right now?",
+    opts:["To miss her less","To be happy and feel loved","To text more","To stop being shy"],
+    a:1,
+    feedback:{
+      correct:"To be happy and feel loved — that's all Yaren really wants for her 🌸",
+      wrong:"More than anything — Yaren just wants Katarina to be happy and feel loved 🌸"
+    }
+  },
+];
+
+let qzIdx=0,qzCorrect=0;
+function initQuiz(){
+  qzIdx=0;qzCorrect=0;
+  renderQuestion();
+}
+function renderQuestion(){
+  const c=document.getElementById('qzContent');
+  if(qzIdx>=questions.length){renderQzEnd();return;}
+  const q=questions[qzIdx];
+  document.getElementById('qzBar').style.width=((qzIdx/questions.length)*100)+'%';
+  c.innerHTML='';
+  const card=document.createElement('div');card.className='qz-card';
+  card.innerHTML=`
+    <div class="qz-num">Question ${qzIdx+1} of ${questions.length}</div>
+    <div class="qz-q">${q.q}</div>
+    <div class="qz-opts" id="qzOpts">
+      ${q.opts.map((o,i)=>`<button class="qz-opt" data-i="${i}">${o}</button>`).join('')}
+    </div>
+  `;
+  c.appendChild(card);
+  card.querySelectorAll('.qz-opt').forEach(btn=>{
+    btn.addEventListener('click',()=>answerQ(btn,q));
+  });
+}
+function answerQ(btn,q){
+  const chosen=parseInt(btn.dataset.i);
+  const correct=chosen===q.a;
+  if(correct)qzCorrect++;
+  document.querySelectorAll('.qz-opt').forEach((b,i)=>{
+    b.classList.add('disabled');
+    if(i===q.a)b.classList.add('correct');
+    else if(i===chosen&&!correct)b.classList.add('wrong');
+  });
+  if(correct)spawnHearts(btn.getBoundingClientRect().left+50,btn.getBoundingClientRect().top,4);
+  const fb=document.createElement('div');fb.className='qz-feedback';
+  fb.textContent=(correct?'✓ ':`✗ `)+q.feedback[correct?'correct':'wrong'];
+  const nxt=document.createElement('button');nxt.className='qz-next';
+  nxt.textContent=qzIdx<questions.length-1?'Next question →':'See my score!';
+  nxt.onclick=()=>{qzIdx++;renderQuestion();};
+  const c=document.getElementById('qzContent');
+  c.appendChild(fb);c.appendChild(nxt);
+}
+function renderQzEnd(){
+  document.getElementById('qzBar').style.width='100%';
+  const s=qzCorrect,t=questions.length;
+  let e,msg,sub;
+  if(s===t){e='💯';msg='Perfect score!';sub='You know Yaren so well — or maybe she just loves you enough to make it obvious. Either way, she is SO happy right now. 💕';}
+  else if(s>=t-2){e='🌸';msg='Almost perfect!';sub=`${s} out of ${t}! You know her heart. The ones you missed — she'll tell you in person one day. 💌`;}
+  else{e='💖';msg=`${s} out of ${t}!`;sub="Every answer brought you closer to knowing her. And Yaren loves that you played. That's already the whole point. 🌙";}
+  const c=document.getElementById('qzContent');
+  c.innerHTML=`<div class="qz-score">
+    <span class="qz-score-emoji">${e}</span>
+    <div class="qz-score-title">${msg}</div>
+    <div class="qz-score-sub">${sub}</div>
+    <button class="qz-retry" onclick="initQuiz()">Play again 💕</button>
+  </div>`;
+  for(let i=0;i<10;i++)setTimeout(()=>spawnHearts(Math.random()*window.innerWidth,Math.random()*window.innerHeight*.8,3),i*150);
+}
+
+/* ══════════════════════════
+   GAME 3 — SCRATCH CARDS
+══════════════════════════ */
+const scratchData=[
+  {e:'💖',text:'You are the most important person in Yaren\'s world. Every single day.'},
+  {e:'🌙',text:'Yaren looks at the moon and thinks of you. Always.'},
+  {e:'✈️',text:'She counts the days. She thinks about the moment she sees you. Often.'},
+  {e:'🌸',text:'You are beautiful — inside and out. Yaren notices everything.'},
+  {e:'😂',text:'Yaren saves the funniest things to show you. You are her person.'},
+  {e:'💌',text:'Every message she sends — she means it completely. Every one.'},
+  {e:'🌹',text:'Choosing Katarina every day is the easiest decision Yaren makes.'},
+  {e:'🤗',text:'Yaren wishes she could hug you right now. A long, warm, real one.'},
+  {e:'☕',text:'One day: slow mornings, same city, same room. She can\'t wait.'},
+  {e:'💛',text:'You can tell Yaren anything. She will never judge you. Ever.'},
+  {e:'🌍',text:'The distance is hard. You are worth every single hard day of it.'},
+  {e:'💝',text:'She loves you. Fully. Completely. From Kayseri, across every mile.'},
+];
+function buildScratch(){
+  const grid=document.getElementById('scratchGrid');
+  grid.innerHTML='';
+  scratchData.forEach((d,i)=>{
+    const card=document.createElement('div');card.className='sc-card';
+    card.style.animationDelay=(i*.04)+'s';
+    card.innerHTML=`
+      <div class="sc-inner">
+        <span class="sc-inner-emoji">${d.e}</span>
+        <div class="sc-inner-text">${d.text}</div>
+      </div>
+      <div class="sc-cover" id="scc${i}">
+        <span class="sc-cover-icon">🎁</span>
+        <span class="sc-cover-text">tap to reveal</span>
+      </div>`;
+    card.addEventListener('click',e=>{
+      const cover=document.getElementById('scc'+i);
+      if(!cover.classList.contains('revealed')){
+        cover.classList.add('revealed');
+        spawnHearts(e.clientX,e.clientY,4);
+      }
+    });
+    grid.appendChild(card);
+  });
+}
+window.addEventListener('DOMContentLoaded',buildScratch);
+
+/* ══════════════════════════
+   GAME 4 — STORY
+══════════════════════════ */
+const scenes=[
+  {
+    char:'🐰',name:'Yaren',role:'from Kayseri',
+    text:'"It\'s a late night. Yaren is thinking about Katarina — like always. She decides to send her something special. What does she send?"',
+    choices:[
+      {text:'A long voice message full of random thoughts',next:1},
+      {text:'A carefully written love letter',next:2},
+      {text:'A funny meme that she\'s been saving',next:3},
+    ]
+  },
+  {
+    char:'🌙',name:'Yaren',role:'voice message incoming',
+    text:'"You press play. Her voice fills your ears — warm and rambling and real. She talks about her day, about missing you, about something she saw that reminded her of you. Then she says: \'I just wanted you to hear my voice because I miss yours.\'"',
+    choices:[
+      {text:'Send a voice message back right away',next:4},
+      {text:'Listen to it three more times before replying',next:4},
+    ]
+  },
+  {
+    char:'💌',name:'Yaren',role:'a letter just for you',
+    text:'"You open it. It\'s long. It\'s honest. It talks about how much she thinks about you, how certain she is, how the distance hurts but also proves something. The last line says: \'I chose you before I knew how hard this would be. I\'d choose you again.\'"',
+    choices:[
+      {text:'Read it again immediately',next:4},
+      {text:'Save it somewhere you\'ll see it every day',next:4},
+    ]
+  },
+  {
+    char:'😂',name:'Yaren',role:'something silly',
+    text:'"It\'s a meme. A stupid, perfectly timed, incredibly specific meme that only you two would understand. She adds: \'I\'ve been holding onto this for three days waiting for the right moment. The right moment is now.\'"',
+    choices:[
+      {text:'Send back a meme that tops hers',next:4},
+      {text:'Laugh out loud and send seventeen hearts',next:4},
+    ]
+  },
+  {
+    char:'💕',name:'Katarina & Yaren',role:'two sides of the world',
+    text:'"You\'re both awake now, talking. It\'s late for one of you. Early for the other. Time zones be damned. What does this moment feel like?"',
+    choices:[
+      {text:'Like home — wherever she is',next:5},
+      {text:'Like the distance doesn\'t exist right now',next:5},
+      {text:'Like I never want this conversation to end',next:5},
+    ]
+  },
+];
+const storyEnd={
+  emoji:'🌸',
+  title:'That\'s your love story.',
+  text:'No matter which path you chose — it always led here. Two people, different places, completely certain about each other.\n\nYaren made this because she wanted you to see what she sees: something real. Something worth every hard day.\n\nShe loves you, Katarina. In all the little ways and all the big ones. Fully. From Kayseri, across every mile between them — completely yours.',
+};
+
+let storyScene=0;
+function initStory(){storyScene=0;renderScene();}
+function renderScene(){
+  const body=document.getElementById('storyBody');
+  body.innerHTML='';
+  if(storyScene>=scenes.length){renderStoryEnd();return;}
+  const sc=scenes[storyScene];
+  const div=document.createElement('div');div.className='story-scene';
+  div.innerHTML=`
+    <div class="ss-top">
+      <div class="ss-char">${sc.char}</div>
+      <div><div class="ss-name">${sc.name}</div><div class="ss-role">${sc.role}</div></div>
+    </div>
+    <div class="ss-text">${sc.text}</div>
+    <div class="ss-choices">${sc.choices.map((c,i)=>`<button class="ss-choice" data-next="${c.next}" data-i="${i}">${c.text}</button>`).join('')}</div>
+  `;
+  body.appendChild(div);
+  div.querySelectorAll('.ss-choice').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      div.querySelectorAll('.ss-choice').forEach(b=>b.classList.add('disabled'));
+      btn.classList.add('chosen');
+      const next=parseInt(btn.dataset.next);
+      const res=document.createElement('div');res.className='ss-result';
+      const resTexts=[
+        "A voice message full of honesty is one of the most intimate things. Yaren trusts you with her unfiltered thoughts. 💕",
+        "She wrote every word thinking of you. She means all of it. Every sentence. 💌",
+        "Laughter is one of the most real forms of love. She saves the funniest things just for you. 😂",
+        "She heard you. She really heard you. And she is smiling right now. 🌙",
+        "Yes. Exactly that. All of those things at once. 💕",
+      ];
+      res.innerHTML=`<span class="sr-emoji">💕</span><div class="sr-title">Beautiful choice.</div><div class="sr-text">${resTexts[storyScene]||''}</div>`;
+      const nxtBtn=document.createElement('button');nxtBtn.className='ss-next';
+      nxtBtn.textContent=next<scenes.length?'Keep reading →':'See the ending ✨';
+      nxtBtn.onclick=()=>{storyScene=next;renderScene();};
+      body.appendChild(res);body.appendChild(nxtBtn);
+      spawnHearts(e.clientX,e.clientY,5);
+    });
+  });
+}
+function renderStoryEnd(){
+  const body=document.getElementById('storyBody');
+  body.innerHTML='';
+  const div=document.createElement('div');div.className='story-end';
+  div.innerHTML=`
+    <span class="se-emoji">${storyEnd.emoji}</span>
+    <div class="se-title">${storyEnd.title}</div>
+    <div class="se-text">${storyEnd.text.replace(/\n/g,'<br>')}</div>
+    <button class="se-replay" onclick="initStory()">Read again 💕</button>
+  `;
+  body.appendChild(div);
+  for(let i=0;i<14;i++)setTimeout(()=>spawnHearts(Math.random()*window.innerWidth,Math.random()*window.innerHeight*.8,3),i*120);
+}
+
+/* ── HEARTS ── */
+const he=['💖','🌸','✨','💕','🌹','💫','🌙','💌','⭐'];
+function spawnHearts(x,y,n=4){
+  for(let i=0;i<n;i++){
+    setTimeout(()=>{
+      const h=document.createElement('div');h.className='fly';
+      h.textContent=he[Math.floor(Math.random()*he.length)];
+      h.style.cssText=`left:${x+(Math.random()-.5)*55}px;top:${y}px;--tx:${(Math.random()-.5)*90}px;--tr:${(Math.random()-.5)*60}deg;`;
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(),1500);
+    },i*80);
+  }
+}
+
+/* ── TOAST ── */
+let tt;
+function showToast(msg){
+  const o=document.querySelector('.toast');if(o)o.remove();clearTimeout(tt);
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);tt=setTimeout(()=>t.remove(),2400);
+}
+
+/* Touch ripple */
+document.addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const r=document.createElement('div');r.className='rip';
+  r.style.cssText=`left:${t.clientX}px;top:${t.clientY}px;transform:translate(-50%,-50%) scale(0);`;
+  document.body.appendChild(r);setTimeout(()=>r.remove(),700);
+},{passive:true});
+</script>
+</body>
+</html>
